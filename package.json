@@ -1,0 +1,12 @@
+{
+  "name": "appops-hub",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "db:migrate": "pnpm --filter @appops/api prisma:migrate",
+    "db:studio": "pnpm --filter @appops/api prisma:studio"
+  }
+}

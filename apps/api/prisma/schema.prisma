@@ -1,0 +1,266 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MerchantAppStatus {
+  installed
+  uninstalled
+  paused
+}
+
+enum EventSource {
+  push
+  backfill
+}
+
+enum IngestionKeyStatus {
+  active
+  revoked
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  frozen
+  pending
+  expired
+}
+
+enum BillingAttemptStatus {
+  success
+  failed
+}
+
+model App {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  keys                AppIngestionKey[]
+  merchants           MerchantApp[]
+  events              Event[]
+  partnerDaily        PartnerDailyMetric[]
+  subscriptions       Subscription[]
+  dailyInstallRollups DailyInstallRollup[]
+  dailyMrrRollups     DailyMrrRollup[]
+  partnerAppGid String? @unique
+  partnerAppName String?
+  
+}
+
+model AppIngestionKey {
+  id         String             @id @default(uuid())
+  appId      String
+  keyId      String             @unique
+  secretHash String
+  status     IngestionKeyStatus @default(active)
+  createdAt  DateTime           @default(now())
+  revokedAt  DateTime?
+
+  app App @relation(fields: [appId], references: [id])
+
+  @@index([appId, status])
+}
+
+model Merchant {
+  id            String         @id @default(uuid())
+  shopifyShopId BigInt         @unique
+  shopDomain    String         @unique
+  shopName      String?
+  email         String?
+  country       String?
+  timezone      String?
+  subscriptions Subscription[]
+  firstSeenAt   DateTime       @default(now())
+  lastSeenAt    DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  apps   MerchantApp[]
+  events Event[]
+  notes  MerchantNote[]
+  tags   MerchantTag[]
+}
+
+model MerchantApp {
+  id            String            @id @default(uuid())
+  merchantId    String
+  appId         String
+  status        MerchantAppStatus
+  installedAt   DateTime?
+  uninstalledAt DateTime?
+  installSource String?
+  lastEventAt   DateTime?
+
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  app      App      @relation(fields: [appId], references: [id])
+
+  @@unique([merchantId, appId])
+  @@index([appId, status, installedAt])
+  @@index([merchantId, status])
+}
+
+model Event {
+  id            String      @id @default(uuid())
+  eventId       String      @unique
+  appId         String
+  merchantId    String?
+  eventType     String
+  eventTs       DateTime
+  ingestedAt    DateTime    @default(now())
+  schemaVersion Int
+  payload       Json
+  source        EventSource
+  hash          String?
+
+  app      App       @relation(fields: [appId], references: [id])
+  merchant Merchant? @relation(fields: [merchantId], references: [id])
+
+  @@index([appId, eventTs(sort: Desc)])
+  @@index([merchantId, eventTs(sort: Desc)])
+}
+
+model Subscription {
+  id                    String             @id @default(uuid())
+  appId                 String
+  merchantId            String
+  shopifySubscriptionId String             @unique
+  status                SubscriptionStatus
+  planCode              String
+  planName              String
+  currency              String
+  interval              String
+  price                 Decimal            @db.Decimal(12, 2)
+  cappedAmount          Decimal?           @db.Decimal(12, 2)
+  trialEndsAt           DateTime?
+  activatedAt           DateTime?
+  cancelledAt           DateTime?
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  app      App      @relation(fields: [appId], references: [id])
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+
+  @@index([appId, status])
+  @@index([merchantId, appId, status])
+  @@index([appId, currentPeriodEnd])
+}
+
+model BillingAttempt {
+  id             String               @id @default(uuid())
+  appId          String
+  merchantId     String
+  subscriptionId String?
+  attemptTs      DateTime
+  status         BillingAttemptStatus
+  failureCode    String?
+  failureReason  String?
+  raw            Json?
+
+  @@index([appId, attemptTs])
+  @@index([appId, status, attemptTs])
+}
+
+model MerchantTag {
+  merchantId String
+  tag        String
+  createdBy  String?
+  createdAt  DateTime @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+
+  @@id([merchantId, tag])
+  @@index([tag])
+}
+
+model MerchantNote {
+  id         String   @id @default(uuid())
+  merchantId String
+  note       String
+  createdBy  String?
+  createdAt  DateTime @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+
+  @@index([merchantId, createdAt(sort: Desc)])
+}
+
+model DailyInstallRollup {
+  day                    DateTime
+  appId                  String
+  installs               Int
+  uninstalls             Int
+  activeInstallsEndOfDay Int
+  createdAt              DateTime @default(now())
+
+  app App @relation(fields: [appId], references: [id])
+
+  @@id([day, appId])
+  @@index([appId, day(sort: Desc)])
+}
+
+model DailyMrrRollup {
+  day                   DateTime
+  appId                 String
+  currency              String
+  mrr                   Decimal  @db.Decimal(14, 2)
+  arr                   Decimal  @db.Decimal(14, 2)
+  activePayingMerchants Int
+  newMrr                Decimal  @db.Decimal(14, 2)
+  expansionMrr          Decimal  @db.Decimal(14, 2)
+  contractionMrr        Decimal  @db.Decimal(14, 2)
+  churnedMrr            Decimal  @db.Decimal(14, 2)
+
+  app App @relation(fields: [appId], references: [id])
+
+  @@id([day, appId, currency])
+  @@index([appId, day(sort: Desc)])
+}
+
+model PartnerDailyMetric {
+  day            DateTime
+  appId          String
+  currency       String
+  installs       Int?
+  uninstalls     Int?
+  activeInstalls Int?
+  revenueGross   Decimal? @db.Decimal(14, 2)
+  revenueNet     Decimal? @db.Decimal(14, 2)
+  fetchedAt      DateTime @default(now())
+  raw            Json?
+
+  app App @relation(fields: [appId], references: [id])
+
+  @@id([day, appId, currency])
+  @@index([appId, day(sort: Desc)])
+}
+
+
+enum UserRole {
+  admin
+  analyst
+  support
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(admin)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([role])
+}
+
