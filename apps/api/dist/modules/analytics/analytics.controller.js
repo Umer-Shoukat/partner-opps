@@ -27,27 +27,38 @@ let AnalyticsController = class AnalyticsController {
     async partnerReconcile(from, to, appId) {
         return this.analytics.partnerReconcile(new Date(from), new Date(to), appId);
     }
+    async partnerSummary(from, to) {
+        return this.analytics.partnerSummary(from, to);
+    }
 };
 exports.AnalyticsController = AnalyticsController;
 __decorate([
-    (0, common_1.Get)('portfolio/summary'),
-    __param(0, (0, common_1.Query)('asOf')),
+    (0, common_1.Get)("portfolio/summary"),
+    __param(0, (0, common_1.Query)("asOf")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AnalyticsController.prototype, "portfolioSummary", null);
 __decorate([
-    (0, common_1.Get)('reconcile/partner'),
-    __param(0, (0, common_1.Query)('from')),
-    __param(1, (0, common_1.Query)('to')),
-    __param(2, (0, common_1.Query)('appId')),
+    (0, common_1.Get)("reconcile/partner"),
+    __param(0, (0, common_1.Query)("from")),
+    __param(1, (0, common_1.Query)("to")),
+    __param(2, (0, common_1.Query)("appId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], AnalyticsController.prototype, "partnerReconcile", null);
+__decorate([
+    (0, common_1.Get)("/partner/summary"),
+    __param(0, (0, common_1.Query)("from")),
+    __param(1, (0, common_1.Query)("to")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "partnerSummary", null);
 exports.AnalyticsController = AnalyticsController = __decorate([
-    (0, common_1.Controller)('analytics'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.Controller)("analytics"),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)("jwt")),
     __metadata("design:paramtypes", [analytics_service_1.AnalyticsService])
 ], AnalyticsController);
 //# sourceMappingURL=analytics.controller.js.map

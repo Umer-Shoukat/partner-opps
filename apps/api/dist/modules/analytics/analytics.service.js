@@ -23,7 +23,10 @@ let AnalyticsService = class AnalyticsService {
     async portfolioSummary(asOf) {
         const day = toDateOnly(asOf);
         const [apps, install, mrr] = await Promise.all([
-            this.prisma.app.findMany({ select: { id: true, slug: true, name: true }, orderBy: { createdAt: 'asc' } }),
+            this.prisma.app.findMany({
+                select: { id: true, slug: true, name: true },
+                orderBy: { createdAt: "asc" },
+            }),
             this.prisma.dailyInstallRollup.findMany({ where: { day } }),
             this.prisma.dailyMrrRollup.findMany({ where: { day } }),
         ]);
@@ -60,10 +63,58 @@ let AnalyticsService = class AnalyticsService {
         if (appId)
             hubWhere.appId = appId;
         const [partner, hubInstall] = await Promise.all([
-            this.prisma.partnerDailyMetric.findMany({ where: partnerWhere, orderBy: { day: 'asc' } }),
-            this.prisma.dailyInstallRollup.findMany({ where: hubWhere, orderBy: { day: 'asc' } }),
+            this.prisma.partnerDailyMetric.findMany({
+                where: partnerWhere,
+                orderBy: { day: "asc" },
+            }),
+            this.prisma.dailyInstallRollup.findMany({
+                where: hubWhere,
+                orderBy: { day: "asc" },
+            }),
         ]);
         return { partner, hubInstall };
+    }
+    async partnerSummary(fromIso, toIso) {
+        const from = new Date(fromIso);
+        const to = new Date(toIso);
+        const rows = await this.prisma.partnerDailyMetric.findMany({
+            where: { day: { gte: from, lte: to } },
+            include: { app: true },
+            orderBy: [{ day: "asc" }],
+        });
+        const byDay = {};
+        for (const r of rows) {
+            const day = r.day.toISOString().slice(0, 10);
+            byDay[day] ??= {
+                day,
+                installs: 0,
+                uninstalls: 0,
+                activeInstalls: 0,
+                revenueGross: 0,
+                revenueNet: 0,
+                currency: r.currency,
+            };
+            byDay[day].installs += r.installs ?? 0;
+            byDay[day].uninstalls += r.uninstalls ?? 0;
+            byDay[day].activeInstalls += r.activeInstalls ?? 0;
+            byDay[day].revenueGross += Number(r.revenueGross ?? 0);
+            byDay[day].revenueNet += Number(r.revenueNet ?? 0);
+        }
+        return {
+            range: { from: fromIso, to: toIso },
+            series: Object.values(byDay),
+            byApp: rows.map((r) => ({
+                day: r.day.toISOString().slice(0, 10),
+                appId: r.appId,
+                appName: r.app.name,
+                installs: r.installs,
+                uninstalls: r.uninstalls,
+                activeInstalls: r.activeInstalls,
+                revenueGross: r.revenueGross,
+                revenueNet: r.revenueNet,
+                currency: r.currency,
+            })),
+        };
     }
 };
 exports.AnalyticsService = AnalyticsService;

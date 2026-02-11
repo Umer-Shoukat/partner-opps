@@ -1,4 +1,4 @@
-import { PrismaService } from '../../common/db/prisma.service';
+import { PrismaService } from "../../common/db/prisma.service";
 export declare class AnalyticsService {
     private prisma;
     constructor(prisma: PrismaService);
@@ -6,8 +6,8 @@ export declare class AnalyticsService {
         asOfDay: string;
         apps: {
             id: string;
-            slug: string;
             name: string;
+            slug: string;
         }[];
         installs: number;
         uninstalls: number;
@@ -21,10 +21,10 @@ export declare class AnalyticsService {
     partnerReconcile(from: Date, to: Date, appId?: string): Promise<{
         partner: {
             appId: string;
-            currency: string;
             day: Date;
             installs: number | null;
             uninstalls: number | null;
+            currency: string;
             activeInstalls: number | null;
             revenueGross: import("@prisma/client/runtime/library").Decimal | null;
             revenueNet: import("@prisma/client/runtime/library").Decimal | null;
@@ -38,6 +38,24 @@ export declare class AnalyticsService {
             installs: number;
             uninstalls: number;
             activeInstallsEndOfDay: number;
+        }[];
+    }>;
+    partnerSummary(fromIso: string, toIso: string): Promise<{
+        range: {
+            from: string;
+            to: string;
+        };
+        series: any[];
+        byApp: {
+            day: string;
+            appId: string;
+            appName: string;
+            installs: number | null;
+            uninstalls: number | null;
+            activeInstalls: number | null;
+            revenueGross: import("@prisma/client/runtime/library").Decimal | null;
+            revenueNet: import("@prisma/client/runtime/library").Decimal | null;
+            currency: string;
         }[];
     }>;
 }

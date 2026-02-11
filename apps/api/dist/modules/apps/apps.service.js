@@ -19,14 +19,14 @@ let AppsService = class AppsService {
         this.prisma = prisma;
     }
     list() {
-        return this.prisma.app.findMany({ orderBy: { createdAt: 'desc' } });
+        return this.prisma.app.findMany({ orderBy: { createdAt: "desc" } });
     }
     create(input) {
         return this.prisma.app.create({ data: input });
     }
     async createIngestionKey(appId) {
-        const keyId = `key_${crypto_1.default.randomBytes(8).toString('hex')}`;
-        const secret = crypto_1.default.randomBytes(32).toString('hex');
+        const keyId = `key_${crypto_1.default.randomBytes(8).toString("hex")}`;
+        const secret = crypto_1.default.randomBytes(32).toString("hex");
         await this.prisma.appIngestionKey.create({
             data: { appId, keyId, secretHash: secret },
         });
@@ -35,7 +35,7 @@ let AppsService = class AppsService {
     async revokeKey(keyId) {
         return this.prisma.appIngestionKey.update({
             where: { keyId },
-            data: { status: 'revoked', revokedAt: new Date() },
+            data: { status: "revoked", revokedAt: new Date() },
         });
     }
 };

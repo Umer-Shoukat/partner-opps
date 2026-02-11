@@ -1,4 +1,4 @@
-import { PrismaService } from '../../common/db/prisma.service';
+import { PrismaService } from "../../common/db/prisma.service";
 export declare class AppsService {
     private prisma;
     constructor(prisma: PrismaService);
@@ -31,9 +31,9 @@ export declare class AppsService {
         id: string;
         createdAt: Date;
         keyId: string;
+        appId: string;
         secretHash: string;
         status: import("@prisma/client").$Enums.IngestionKeyStatus;
         revokedAt: Date | null;
-        appId: string;
     }>;
 }

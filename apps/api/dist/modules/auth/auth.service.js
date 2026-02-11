@@ -18,13 +18,17 @@ let AuthService = class AuthService {
         this.jwt = jwt;
     }
     async login(email, password) {
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@appops.local';
-        const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@appops.local";
+        const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
         if (email !== adminEmail || password !== adminPassword) {
-            throw new common_1.UnauthorizedException('invalid_credentials');
+            throw new common_1.UnauthorizedException("invalid_credentials");
         }
-        const token = await this.jwt.signAsync({ sub: 'admin', email, role: 'admin' });
-        return { access_token: token, token_type: 'Bearer' };
+        const token = await this.jwt.signAsync({
+            sub: "admin",
+            email,
+            role: "admin",
+        });
+        return { access_token: token, token_type: "Bearer" };
     }
 };
 exports.AuthService = AuthService;
