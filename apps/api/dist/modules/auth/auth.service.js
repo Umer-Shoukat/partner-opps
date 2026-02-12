@@ -12,21 +12,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
+const bcrypt = require("bcryptjs");
+const prisma_service_1 = require("../../common/db/prisma.service");
 let AuthService = class AuthService {
     jwt;
-    constructor(jwt) {
+    prisma;
+    constructor(jwt, prisma) {
         this.jwt = jwt;
+        this.prisma = prisma;
     }
     async login(email, password) {
-        const adminEmail = process.env.ADMIN_EMAIL || "admin@appops.local";
-        const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-        if (email !== adminEmail || password !== adminPassword) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user || !user.isActive)
             throw new common_1.UnauthorizedException("invalid_credentials");
-        }
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok)
+            throw new common_1.UnauthorizedException("invalid_credentials");
         const token = await this.jwt.signAsync({
-            sub: "admin",
-            email,
-            role: "admin",
+            sub: user.id,
+            email: user.email,
+            role: user.role,
         });
         return { access_token: token, token_type: "Bearer" };
     }
@@ -34,6 +39,7 @@ let AuthService = class AuthService {
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [jwt_1.JwtService])
+    __metadata("design:paramtypes", [jwt_1.JwtService,
+        prisma_service_1.PrismaService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

@@ -1,4 +1,5 @@
 import { AppsService } from "./apps.service";
+import { UpdateAppDto } from "./dto/update-app.dto";
 export declare class AppsController {
     private apps;
     constructor(apps: AppsService);
@@ -30,10 +31,19 @@ export declare class AppsController {
     revokeKey(keyId: string): Promise<{
         id: string;
         createdAt: Date;
-        keyId: string;
         appId: string;
+        keyId: string;
         secretHash: string;
         status: import("@prisma/client").$Enums.IngestionKeyStatus;
         revokedAt: Date | null;
+    }>;
+    update(id: string, body: UpdateAppDto): Promise<{
+        id: string;
+        slug: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        partnerAppGid: string | null;
+        partnerAppName: string | null;
     }>;
 }

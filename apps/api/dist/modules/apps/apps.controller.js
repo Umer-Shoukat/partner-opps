@@ -16,6 +16,7 @@ exports.AppsController = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const apps_service_1 = require("./apps.service");
+const update_app_dto_1 = require("./dto/update-app.dto");
 let AppsController = class AppsController {
     apps;
     constructor(apps) {
@@ -32,6 +33,9 @@ let AppsController = class AppsController {
     }
     async revokeKey(keyId) {
         return this.apps.revokeKey(keyId);
+    }
+    async update(id, body) {
+        return this.apps.update(id, body);
     }
 };
 exports.AppsController = AppsController;
@@ -62,6 +66,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AppsController.prototype, "revokeKey", null);
+__decorate([
+    (0, common_1.Patch)("/:id"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_app_dto_1.UpdateAppDto]),
+    __metadata("design:returntype", Promise)
+], AppsController.prototype, "update", null);
 exports.AppsController = AppsController = __decorate([
     (0, common_1.Controller)("apps"),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("jwt")),

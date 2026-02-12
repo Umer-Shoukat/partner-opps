@@ -38,6 +38,15 @@ let AppsService = class AppsService {
             data: { status: "revoked", revokedAt: new Date() },
         });
     }
+    async update(id, dto) {
+        return this.prisma.app.update({
+            where: { id },
+            data: {
+                partnerAppGid: dto.partnerAppGid ?? undefined,
+                partnerAppName: dto.partnerAppName ?? undefined,
+            },
+        });
+    }
 };
 exports.AppsService = AppsService;
 exports.AppsService = AppsService = __decorate([

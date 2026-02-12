@@ -6,8 +6,8 @@ export declare class AnalyticsController {
         asOfDay: string;
         apps: {
             id: string;
-            name: string;
             slug: string;
+            name: string;
         }[];
         installs: number;
         uninstalls: number;
@@ -20,8 +20,8 @@ export declare class AnalyticsController {
     }>;
     partnerReconcile(from: string, to: string, appId?: string): Promise<{
         partner: {
-            appId: string;
             day: Date;
+            appId: string;
             installs: number | null;
             uninstalls: number | null;
             currency: string;
@@ -33,8 +33,8 @@ export declare class AnalyticsController {
         }[];
         hubInstall: {
             createdAt: Date;
-            appId: string;
             day: Date;
+            appId: string;
             installs: number;
             uninstalls: number;
             activeInstallsEndOfDay: number;
