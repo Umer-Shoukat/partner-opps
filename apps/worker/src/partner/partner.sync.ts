@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { partnerGraphql } from "./partner.client";
+import pino from "pino";
+
+const logger = pino({ level: process.env.LOG_LEVEL || "info" });
 
 const prisma = new PrismaClient();
 
@@ -49,12 +52,17 @@ export async function syncPartnerDay(dayIso: string) {
         }
       }
     `;
+    console.log(
+      `[partner] syncing ${dayIso} app=${app.partnerAppName ?? app.id}`,
+    );
 
     const data = await partnerGraphql<PartnerMetricsResponse>(query, {
       orgId: `gid://shopify/Organization/${orgId}`,
       appId: app.partnerAppGid,
       date: dayIso,
     });
+
+    console.log("[partner] raw response", JSON.stringify(data, null, 2));
 
     if (!data.app) continue;
 
@@ -93,7 +101,9 @@ export async function syncPartnerDay(dayIso: string) {
         raw: row as any,
       },
     });
-
+    console.log(
+      `[partner] saved ${dayIso} app=${app.partnerAppName} installs=${row.installs} active=${row.activeInstalls}`,
+    );
     // also store partner app name for convenience
     await prisma.app.update({
       where: { id: app.id },
@@ -107,6 +117,7 @@ export async function backfillPartner(fromIso: string, toIso: string) {
   const to = new Date(toIso);
 
   for (let d = new Date(from); d <= to; d.setUTCDate(d.getUTCDate() + 1)) {
+    logger.info("backfill process startde");
     const dayIso = d.toISOString().slice(0, 10);
     await syncPartnerDay(dayIso);
   }

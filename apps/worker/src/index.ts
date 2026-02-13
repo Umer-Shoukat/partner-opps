@@ -194,7 +194,7 @@ async function main() {
   // repeat hourly (MVP). In prod: use cron/temporal/k8s CronJob with daily schedule.
   setInterval(scheduleOncePerHour, 60 * 60 * 1000);
 
-  logger.info("Worker started");
+  logger.info("Worker started.......");
 }
 
 main().catch((e) => {
