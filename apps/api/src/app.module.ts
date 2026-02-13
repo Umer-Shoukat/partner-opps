@@ -8,6 +8,7 @@ import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { PartnerModule } from "./modules/partner/partner.module";
 import { RedisProvider } from "./common/redis/redis.provider";
 import { RedisModule } from "./common/redis/redis.module";
+import { QueuesModule } from "./common/queues/queues.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RedisModule } from "./common/redis/redis.module";
     AnalyticsModule,
     PartnerModule,
     RedisModule,
+    QueuesModule,
   ],
   providers: [RedisProvider],
 })

@@ -3,6 +3,8 @@ import Redis from "ioredis";
 import { PrismaClient } from "@prisma/client";
 import pino from "pino";
 import { backfillPartner, syncPartnerDay } from "./partner/partner.sync";
+import "dotenv/config";
+import { startPartnerWorker } from "./processors/partner.processor";
 
 const logger = pino({ level: process.env.LOG_LEVEL || "info" });
 
@@ -12,6 +14,10 @@ const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
 
 const partnerQueue = new Queue("partner_sync", { connection });
 const rollupQueue = new Queue("rollups_daily", { connection });
+
+if (!redisUrl) throw new Error("Missing REDIS_URL");
+startPartnerWorker(redisUrl);
+console.log("Worker started");
 
 function dateOnlyUTC(d: Date) {
   return new Date(

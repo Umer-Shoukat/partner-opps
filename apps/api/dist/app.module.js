@@ -17,6 +17,7 @@ const analytics_module_1 = require("./modules/analytics/analytics.module");
 const partner_module_1 = require("./modules/partner/partner.module");
 const redis_provider_1 = require("./common/redis/redis.provider");
 const redis_module_1 = require("./common/redis/redis.module");
+const queues_module_1 = require("./common/queues/queues.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
             analytics_module_1.AnalyticsModule,
             partner_module_1.PartnerModule,
             redis_module_1.RedisModule,
+            queues_module_1.QueuesModule,
         ],
         providers: [redis_provider_1.RedisProvider],
     })
